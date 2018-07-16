@@ -1,0 +1,21 @@
+Package: mirutil
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Who wrote it
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: Apache 2.0
+Encoding: UTF-8
+LazyData: true
+Depends:
+    MASS,
+    magrittr,
+    data.table,
+    dplyr,
+    stringr,
+    reshape2,
+    parallel,
+    tidyr
+RoxygenNote: 6.0.1

@@ -1,0 +1,106 @@
+---
+title: "MiRUtil examples"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Package
+
+```{r}
+devtools::unload()
+devtools::document()
+devtools::load_all()
+library(ggplot2)
+library(forcats)
+```
+
+Load samples
+
+```{r}
+metadata <- fread("metadata.txt")
+dataset <- read_mixcr_dataset(metadata, 
+                              dropExtraColumns = T)
+```
+
+Basic statistics examples
+
+```{r}
+dataset$samples[[1]] %>%
+  compute_segment_usage %>%
+  head
+
+dataset$samples[[1]] %>%
+  compute_segment_usage2 %>%
+  head
+
+dataset$samples[[1]] %>%
+  compute_insertions %>%
+  head
+
+dataset$samples[[1]] %>%
+  compute_deletions %>%
+  head
+```
+
+Segment usage for all samples
+
+```{r}
+df.segm <- dataset %>%
+  batch_analysis(compute_segment_usage)
+
+df.segm %>%
+  mutate(st = paste(chain, segment.type),
+         segment = substr(segment, 3, nchar(segment))) %>%
+  ggplot(aes(x = fct_reorder(segment, freq.reads), 
+             group = sample.id,
+             y = freq.reads, color = sample.id)) +
+  geom_line() +
+  coord_flip() +
+  xlab("") + ylab("Segment frequency") +
+  scale_color_brewer(palette = "Set1") +
+  facet_wrap(~st, scales = "free", ncol = 5) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.y = element_text(family = "mono", size = 6),
+        strip.background = element_rect(fill = NA, color = NA),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor = element_blank())
+```
+
+Insert size distribution for all samples
+
+```{r}
+df.ins <- dataset %>%
+  batch_analysis(compute_insertions)
+```
+
+Deletion size distribution for all samples
+
+```{r}
+df.del <- dataset %>%
+  batch_analysis(compute_deletions)
+```
+
+Get all stats at once
+
+```{r}
+df.stats <- dataset %>%
+  compute_rearr_stats
+```
+
+Get distances between samples
+
+```{r}
+df.dist <- df.stats %>%
+  compute_rearr_stat_dist
+```
+
+```{r}
+df.dist %>% 
+  compute_rearr_stat_mds
+```
+
+
