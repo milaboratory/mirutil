@@ -7,7 +7,8 @@
 batch_analysis(dataset, fun, cores = 2)
 }
 \arguments{
-\item{dataset}{a metadata table}
+\item{dataset}{a set of samples and metadata produced by 'read_mixcr_dataset'
+function}
 
 \item{fun}{a function that takes a sample and metadata list as first and
 second arguments}
