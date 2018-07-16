@@ -1,3 +1,6 @@
+## Various Jensen-Shannon Divergence implementations
+
+# frequencies / zero-safe
 .jsd_freq_safe <- function(p, q) {
   p <- ifelse(is.na(p), 0, p)
   q <- ifelse(is.na(q), 0, q)
@@ -6,25 +9,30 @@
               ifelse(q == 0, 0, q * log(q / m)))
 }
 
+# frequencies / zero-unsafe
 .jsd_freq_unsafe <- function(p, q) {
   m <- 0.5 * (p + q)
   0.5 * sum(p * log(p / m) + q * log(q / m))
 }
 
+# count / with pseudocounts
 .jsd_count_safe <- function(x, y) {
   x <- ifelse(is.na(x), 0, x) + 1
   y <- ifelse(is.na(y), 0, y) + 1
   .jsd_freq_unsafe(x / sum(x), y / sum(y))
 }
 
+# distance based on count / with pseudocounts
 .jsd_count_dist <- function(p, q) {
   sqrt(.jsd_count_safe(p, q) / log(2))
 }
 
+# distance based on frequencies
 .jsd_freq_dist <- function(p, q) {
   sqrt(.jsd_freq_safe(p, q) / log(2))
 }
 
+# compute a distance between two histograms corresponding to different samples
 .histogram_dist_inner <- function(data,
                                   sample.id.1,
                                   sample.id.2,
@@ -92,10 +100,31 @@
   res
 }
 
+#' Compute the pairwise Jensen-Shannon distance between samples for a set of histograms
+#'
+#' @description Computes pairwise set of Jensen-Shannon distance provided a set of
+#' histograms. Several histogram groups can be provided having different 'type' value.
+#' If specified, will also only compare samples with the same antigen receptor chain
+#'
+#' @param data a set of histograms, should contain 'sample.id', statistic type - 'type',
+#' bin identifier - 'variable' and frequency/count - 'value' columns
+#' @param cores number of cores for parallelization
+#' @param add.pseudocounts if True, will add pseudocounts and re-normalize histograms,
+#' in this case 'value' should contain count, not frequency
+#' @param filter.by.chain if True, will only compare samples with the same chain,
+#' requires additional 'chain' column in 'data'
+#'
+#' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
+#' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
+#' if 'filter.by.chain' is set to true will also include 'chain' column
 histogram_dist <- function(data,
                            cores,
                            add.pseudocounts,
                            filter.by.chain) {
+  if (filter.by.chain & !("chain" %in% colnames(data))) {
+    stop("Cannot filter by chain with chain column missing")
+  }
+
   with(data,
        expand.grid(
          sample.id.1 = unique(sample.id),
@@ -114,6 +143,8 @@ histogram_dist <- function(data,
     rbindlist
 }
 
+# selects between reads (weighted) and clonotypes (unweighted),
+# count values (add.pseudocounts = T) and frequency values (add.pseudocounts = F)
 .select_value <- function(data,
                           value.type,
                           add.pseudocounts) {
@@ -135,6 +166,7 @@ histogram_dist <- function(data,
   data
 }
 
+# a generic function for computing distances for a given histogram
 .dist_value <- function(data,
                         value.types,
                         add.pseudocounts,
@@ -153,6 +185,22 @@ histogram_dist <- function(data,
     mutate(statistic = name)
 }
 
+#' Compute the pairwise Jensen-Shannon distance between samples for segment usage
+#'
+#' @description Computes pairwise set of Jensen-Shannon distance provided a set of
+#' segment usage histograms. If specified, will also only compare samples with the
+#' same antigen receptor chain
+#'
+#' @param data a set of histograms produced by 'compute_segment_usage' function
+#' @param cores number of cores for parallelization
+#' @param add.pseudocounts if True, will add pseudocounts and re-normalize histograms,
+#' in this case 'value' should contain count, not frequency
+#' @param filter.by.chain if True, will only compare samples with the same chain,
+#' requires additional 'chain' column in 'data'
+#'
+#' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
+#' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
+#' if 'filter.by.chain' is set to true will also include 'chain' column
 segment_usage_dist <- function(data,
                                value.types = c("reads", "clonotypes"),
                                add.pseudocounts = F,
@@ -169,6 +217,22 @@ segment_usage_dist <- function(data,
               "segment.usage")
 }
 
+#' Compute the pairwise Jensen-Shannon distance between samples for paired segment usage
+#'
+#' @description Computes pairwise set of Jensen-Shannon distance provided a set of
+#' segment pair usage histograms. If specified, will also only compare samples with the
+#' same antigen receptor chain
+#'
+#' @param data a set of histograms produced by 'compute_segment_usage2' function
+#' @param cores number of cores for parallelization
+#' @param add.pseudocounts if True, will add pseudocounts and re-normalize histograms,
+#' in this case 'value' should contain count, not frequency
+#' @param filter.by.chain if True, will only compare samples with the same chain,
+#' requires additional 'chain' column in 'data'
+#'
+#' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
+#' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
+#' if 'filter.by.chain' is set to true will also include 'chain' column
 segment2_usage_dist <- function(data,
                                value.types = c("reads", "clonotypes"),
                                add.pseudocounts = F,
@@ -185,6 +249,23 @@ segment2_usage_dist <- function(data,
               "segment2.usage")
 }
 
+#' Compute the pairwise Jensen-Shannon distance between samples for insert
+#' size distribution
+#'
+#' @description Computes pairwise set of Jensen-Shannon distance provided a set of
+#' insert size distribution histograms. If specified, will also only compare samples
+#' with the same antigen receptor chain
+#'
+#' @param data a set of histograms produced by 'compute_insertions' function
+#' @param cores number of cores for parallelization
+#' @param add.pseudocounts if True, will add pseudocounts and re-normalize histograms,
+#' in this case 'value' should contain count, not frequency
+#' @param filter.by.chain if True, will only compare samples with the same chain,
+#' requires additional 'chain' column in 'data'
+#'
+#' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
+#' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
+#' if 'filter.by.chain' is set to true will also include 'chain' column
 insert_size_dist <- function(data,
                              value.types = c("reads", "clonotypes"),
                              add.pseudocounts = F,
@@ -201,6 +282,23 @@ insert_size_dist <- function(data,
               "insert.size")
 }
 
+#' Compute the pairwise Jensen-Shannon distance between samples for segment trimming
+#' size distribution
+#'
+#' @description Computes pairwise set of Jensen-Shannon distance provided a set of
+#' per-segment trimming size distribution histograms. If specified, will also only
+#' compare samples with the same antigen receptor chain
+#'
+#' @param data a set of histograms produced by 'compute_deletions' function
+#' @param cores number of cores for parallelization
+#' @param add.pseudocounts if True, will add pseudocounts and re-normalize histograms,
+#' in this case 'value' should contain count, not frequency
+#' @param filter.by.chain if True, will only compare samples with the same chain,
+#' requires additional 'chain' column in 'data'
+#'
+#' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
+#' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
+#' if 'filter.by.chain' is set to true will also include 'chain' column
 deletion_size_dist <- function(data,
                                value.types = c("reads", "clonotypes"),
                                add.pseudocounts = F,
@@ -217,6 +315,13 @@ deletion_size_dist <- function(data,
               "deletion.size")
 }
 
+#' Convert pairwise distance tables to dist object
+#'
+#' @description Converts between distance tables and R dist object
+#'
+#' @param data distance table produced by '*_dist' functions
+#'
+#' @return an R dist object
 dists_to_rdist <- function(dists) {
   mat <- dists %>%
     rbind(dists %>%
@@ -230,6 +335,14 @@ dists_to_rdist <- function(dists) {
   mat %>% as.matrix %>% as.dist
 }
 
+#' Multidimensional scaling for pairwise sample distances
+#'
+#' @description Performs a multidimensional scaling for pairwise sample distance
+#' tables produced by '*_dist' functions
+#'
+#' @param data distance table produced by '*_dist' functions
+#'
+#' @return a data table holding sample ids and their 2D coordinates
 dists_to_mds <- function(dists) {
   if (nrow(dists) == 1) {
     return(data.frame(sample.id = c(dists$sample.id.1, dists$sample.id.2),

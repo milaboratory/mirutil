@@ -1,5 +1,4 @@
-select <- dplyr::select
-
+# required metadata columns
 .req_cols_meta <- c("sample.id",
                     "file.name",
                     "chain")
@@ -39,8 +38,7 @@ read_mixcr_dataset <- function(metadata, ...) {
        "samples" = samples)
 }
 
-#' Auxilliary gz-friendly fread function
-#'
+# Auxilliary gz-friendly fread function
 .fread_gz <- function(filename) {
   if (endsWith(filename, "gz")) {
     if ("command -v gzcat" %>%
@@ -56,6 +54,7 @@ read_mixcr_dataset <- function(metadata, ...) {
   fread(filename)
 }
 
+# required columns
 .req_cols_mixcr <- c("refPoints",
                      "cloneId",
                      "cloneCount",
@@ -64,6 +63,7 @@ read_mixcr_dataset <- function(metadata, ...) {
                      "allJHitsWithScore",
                      "allCHitsWithScore")
 
+# temp columns that can be removed in further analysis
 .tmp_cols_mixcr <- c("refPoints")
 
 #' Read mixcr sample
@@ -77,6 +77,7 @@ read_mixcr_dataset <- function(metadata, ...) {
 read_mixcr_sample <- function(filename, dropExtraColumns = F) {
   data <- .fread_gz(filename)
 
+  # check missing cols
   found_cols <- intersect(.req_cols_mixcr, colnames(data))
 
   if (!setequal(.req_cols_mixcr, found_cols)) {
@@ -87,33 +88,38 @@ read_mixcr_sample <- function(filename, dropExtraColumns = F) {
                 missing_cols))
   }
 
-
+  # remove columns unused by package if requested
   if (dropExtraColumns) {
     data <- data %>%
       select(one_of(.req_cols_mixcr))
   }
 
+  # most likely v/d/j
   data$v         <- str_split_fixed(data$allVHitsWithScore, fixed("*"), Inf)[,1]
   data$d         <- str_split_fixed(data$allDHitsWithScore, fixed("*"), Inf)[,1]
   data$j         <- str_split_fixed(data$allJHitsWithScore, fixed("*"), Inf)[,1]
 
+  # vdj rearrangement markup
   ref_points_tmp <- str_split_fixed(data$refPoints, fixed(":"), Inf)
   data$vDel      <- as.integer(ref_points_tmp[,11])
   data$vdIns     <- as.integer(ref_points_tmp[,13]) - as.integer(ref_points_tmp[,12])
-  data$vdIns     <- ifelse(data$vdIns < 0, 0, data$vdIns)
   data$dDel5     <- as.integer(ref_points_tmp[,14])
   data$dDel3     <- as.integer(ref_points_tmp[,15])
   data$djIns     <- as.integer(ref_points_tmp[,17]) - as.integer(ref_points_tmp[,16])
-  data$djIns     <- ifelse(data$djIns < 0, 0, data$djIns)
   data$vjIns     <- as.integer(ref_points_tmp[,17]) - as.integer(ref_points_tmp[,12])
-  data$vjIns     <- ifelse(data$vjIns < 0, 0, data$vjIns)
   data$jDel      <- as.integer(ref_points_tmp[,18])
+
+  # non-negative insertions
+  data$vdIns     <- ifelse(data$vdIns < 0, 0, data$vdIns)
+  data$djIns     <- ifelse(data$djIns < 0, 0, data$djIns)
+  data$vjIns     <- ifelse(data$vjIns < 0, 0, data$vjIns)
 
   if (dropExtraColumns) {
     data <- data %>%
       select(-one_of(.tmp_cols_mixcr))
   }
 
+  # replace blank segment names
   data %>%
     mutate(v = ifelse(v == "", "undef", v),
            d = ifelse(d == "", "undef", d),

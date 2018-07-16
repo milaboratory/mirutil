@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Package
 
 ```{r}
-devtools::unload()
+#devtools::unload()
 devtools::document()
 devtools::load_all()
 library(ggplot2)

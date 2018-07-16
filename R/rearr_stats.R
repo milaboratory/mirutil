@@ -1,5 +1,7 @@
+# all possible chains
 .chain.list <- c("TRA", "TRB", "TRG", "TRD", "IGH", "IGK", "IGL")
 
+# list of chains from corresponding metadata column / all chains if missing
 .get_chains <- function(metadata) {
   ifelse(is.null(metadata) | is.na(metadata),
          .chain.list,
