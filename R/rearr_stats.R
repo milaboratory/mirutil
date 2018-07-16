@@ -64,6 +64,8 @@
 #' @return segment usage table with unweighted 'freq.clonotypes' and
 #' weighted 'freq.reads' frequencies, unnormalized 'count.*' values
 #' are also provided
+#'
+#' @export
 compute_segment_usage <- function(sample,
                                   metadata = NA) {
   chains <- .get_chains(metadata)
@@ -161,6 +163,8 @@ compute_segment_usage <- function(sample,
 #' @return segment pair usage table with unweighted 'freq.clonotypes' and
 #' weighted 'freq.reads' frequencies, unnormalized 'count.*' values
 #' are also provided
+#'
+#' @export
 compute_segment_usage2 <- function(sample,
                                    metadata = NA) {
   chains <- .get_chains(metadata)
@@ -215,6 +219,8 @@ compute_segment_usage2 <- function(sample,
 #' @return insert size table with unweighted 'freq.clonotypes' and
 #' weighted 'freq.reads' frequencies, unnormalized 'count.*' values
 #' are also provided
+#'
+#' @export
 compute_insertions <- function(sample,
                                metadata = NA) {
   chains <- .get_chains(metadata)
@@ -278,6 +284,8 @@ compute_insertions <- function(sample,
 #' @return deletion size by segment table with unweighted 'mean.clonotypes' and
 #' weighted 'mean.reads' means, total number of clonotypes/reads for a given
 #' segment is stored in 'count.*' columns
+#'
+#' @export
 compute_deletions_m <- function(sample,
                               metadata = NA) {
   chains <- .get_chains(metadata)
@@ -338,6 +346,8 @@ compute_deletions_m <- function(sample,
 #' @return deletion size by segment 2D histogram/table with unweighted 'freq.clonotypes' and
 #' weighted 'freq.reads' frequencies, unnormalized 'count.*' values
 #' are also provided
+#'
+#' @export
 compute_deletions <- function(sample,
                               metadata = NA) {
   chains <- .get_chains(metadata)

@@ -15,6 +15,8 @@
 #' @param ... extra parameters for sample reader
 #'
 #' @return sample bundle containing metadata and a list of sample data tables
+#'
+#' @export
 read_mixcr_dataset <- function(metadata, ...) {
   found_cols <- intersect(.req_cols_meta, colnames(metadata))
 
@@ -74,6 +76,8 @@ read_mixcr_dataset <- function(metadata, ...) {
 #' @param dropExtraColumns drop all columns except ones needed for this package
 #'
 #' @return sample data table
+#'
+#' @export
 read_mixcr_sample <- function(filename, dropExtraColumns = F) {
   data <- .fread_gz(filename)
 

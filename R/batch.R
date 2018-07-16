@@ -10,6 +10,8 @@
 #' @param cores number of cores for parallelization
 #'
 #' @return a summary data table of analysis results
+#'
+#' @export
 batch_analysis <- function(dataset,
                            fun,
                            cores = 2) {
@@ -39,6 +41,8 @@ batch_analysis <- function(dataset,
 #' @param cores number of cores for parallelization
 #'
 #' @return a list holding 'segment.usage', 'insert.size' and 'deletion.size' tables
+#'
+#' @export
 compute_rearr_stats <- function(dataset,
                                 cores = 2) {
   list("segment.usage" = batch_analysis(dataset,
@@ -70,6 +74,8 @@ compute_rearr_stats <- function(dataset,
 #'
 #' @return a data frame holding pairwise distances between samples for each
 #' rearrangement statistic
+#'
+#' @export
 compute_rearr_stat_dist <- function(stats_bundle,
                                     value.types = c("reads", "clonotypes"),
                                     add.pseudocounts = F,
@@ -103,6 +109,8 @@ compute_rearr_stat_dist <- function(stats_bundle,
 #'
 #' @return a data frame holding sample coordinates for each
 #' rearrangement statistic and chain
+#'
+#' @export
 compute_rearr_stat_mds <- function(dists_bundle) {
   dists_bundle %>%
     group_by(chain, statistic, type, value.type) %>%
