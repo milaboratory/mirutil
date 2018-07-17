@@ -1,0 +1,9 @@
+sample.id	file.name	chain
+2U.B.TRA.1	2U.B.TRA.100.1000.1.txt.gz	TRA
+2U.B.TRA.2	2U.B.TRA.100.1000.2.txt.gz	TRA
+2U.B.TRB.1	2U.B.TRB.100.1000.1.txt.gz	TRB
+2U.B.TRB.2	2U.B.TRB.100.1000.2.txt.gz	TRB
+U.B.TRA.1	U.B.TRA.100.1000.1.nc.txt.gz	TRA
+U.B.TRA.2	U.B.TRA.100.1000.2.nc.txt.gz	TRA
+U.B.TRB.1	U.B.TRB.100.1000.1.nc.txt.gz	TRB
+U.B.TRB.2	U.B.TRB.100.1000.2.nc.txt.gz	TRB

@@ -225,11 +225,10 @@ compute_insertions <- function(sample,
                                metadata = NA) {
   chains <- .get_chains(metadata)
 
-  #ypes <- c()
-  #if (any(c("TRA", "TRG", "IGL", "IGK") %in% chains)) {
-  #  types <- "VJ"
-  #}
-  types <- "VJ"
+  types <- c()
+  if (any(c("TRA", "TRG", "IGL", "IGK") %in% chains)) {
+    types <- "VJ"
+  }
   if (any(c("TRB", "TRD", "IGH") %in% chains)) {
     types <- c(types, "VD", "DJ")
   }

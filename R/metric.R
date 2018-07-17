@@ -371,5 +371,6 @@ dists_to_mds <- function(dists) {
 
   data.frame(sample.id = rownames(xy),
              mds.x = xy[,1],
-             mds.y = xy[,2])
+             mds.y = xy[,2],
+             stringsAsFactors = F)
 }

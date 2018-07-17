@@ -1,9 +1,0 @@
-sample.id	file.name	chain
-Chudakov-2U.B.TRA.1	Chudakov-2U.B.TRA.100.1000.1.txt.gz	TRA
-Chudakov-2U.B.TRA.2	Chudakov-2U.B.TRA.100.1000.2.txt.gz	TRA
-Chudakov-2U.B.TRB.1	Chudakov-2U.B.TRB.100.1000.1.txt.gz	TRB
-Chudakov-2U.B.TRB.2	Chudakov-2U.B.TRB.100.1000.2.txt.gz	TRB
-Chudakov-U.B.TRA.1	Chudakov-U.B.TRA.100.1000.1.nc.txt.gz	TRA
-Chudakov-U.B.TRA.2	Chudakov-U.B.TRA.100.1000.2.nc.txt.gz	TRA
-Chudakov-U.B.TRB.1	Chudakov-U.B.TRB.100.1000.1.nc.txt.gz	TRB
-Chudakov-U.B.TRB.2	Chudakov-U.B.TRB.100.1000.2.nc.txt.gz	TRB

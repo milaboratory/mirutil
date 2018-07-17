@@ -1,0 +1,150 @@
+---
+title: "MiRUtil examples"
+author: "Mike Sh"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+vignette: |
+  %\VignetteIndexEntry{Vignette Title} %\VignetteEngine{knitr::rmarkdown} %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r}
+#devtools::install()
+```
+
+Load package via devtools:
+
+```
+devtools::install_github("milaboratory/mirutil")
+```
+
+Load metadata and samples
+
+```{r}
+library(mirutil); packageVersion("mirutil")
+
+metadata <- system.file("extdata", "metadata.txt", package="mirutil") %>%
+  fread %>%
+  # relative file paths to absolute ones
+  mutate(file.name = system.file("extdata", file.name, package="mirutil"))
+
+dataset <- metadata %>%
+  read_mixcr_dataset
+
+# todo: print dataset summary
+```
+
+Compute rearrangement statistics
+
+```{r}
+library(kableExtra) # for tables
+
+df.stats <- dataset %>%
+  compute_rearr_stats
+
+df.stats %>%
+  str
+```
+
+Plot segment usage for alpha chain
+
+```{r}
+# packages for plotting
+library(ggplot2)
+library(forcats) 
+
+plt_segm <- function(m) {
+  m %>%
+    ggplot(aes(x = fct_reorder(segment, freq.reads), 
+             group = sample.id,
+             y = freq.reads, color = sample.id)) +
+    geom_line() +
+    coord_flip() +
+    xlab("") + ylab("Segment frequency") +
+    scale_color_brewer(palette = "Set1") +
+    facet_wrap(~segment.type, scales = "free") +
+    theme_bw() +
+    theme(legend.position = "bottom",
+          axis.text.y = element_text(family = "mono", size = 6),
+          strip.background = element_rect(fill = NA, color = NA),
+          panel.grid.major.x = element_blank(),
+          panel.grid.minor = element_blank())
+}
+
+df.stats %>%
+  .$segment.usage %>%
+  filter(chain == "TRA") %>%
+  plt_segm
+```
+
+For beta chain
+
+```{r}
+df.stats %>%
+  .$segment.usage %>%
+  filter(chain == "TRB") %>%
+  plt_segm
+```
+
+Get distances between samples based on rearrangement statistics
+
+```{r}
+df.dist <- df.stats %>%
+  compute_rearr_stat_dist
+
+df.dist %>%
+  head
+```
+
+Convert distances to MDS coordinates
+
+```{r}
+invisible(df.mds <- df.dist %>% compute_rearr_stat_mds)
+```
+
+Plot MDS for segment usage
+
+```{r}
+plt_mds <- function(m) {
+  m %>%
+    ggplot(aes(x = mds.x, y = mds.y, color = sample.id)) +
+    geom_point() +
+    xlab("") + ylab("") +
+    facet_grid(value.type~chain + type, scales = "free") +
+    scale_color_brewer(palette = "Set1") +
+    theme_bw() +
+    theme(legend.position = "bottom",
+          strip.background = element_rect(fill = NA, color = NA),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+}
+
+df.mds %>%
+  filter(statistic == "segment.usage") %>%
+  plt_mds
+```
+
+Plot MDS for added N-bases (inserts)
+
+```{r}
+df.mds %>%
+  filter(statistic == "insert.size") %>%
+  plt_mds
+```
+
+Plot MDS for trimmed bases from segment ends
+
+```{r}
+df.mds %>%
+  filter(statistic == "deletion.size") %>%
+  plt_mds
+```
