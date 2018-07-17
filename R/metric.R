@@ -117,8 +117,6 @@
 #' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
 #' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
 #' if 'filter.by.chain' is set to true will also include 'chain' column
-#'
-#' @export
 histogram_dist <- function(data,
                            cores,
                            add.pseudocounts,
@@ -203,8 +201,6 @@ histogram_dist <- function(data,
 #' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
 #' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
 #' if 'filter.by.chain' is set to true will also include 'chain' column
-#'
-#' @export
 segment_usage_dist <- function(data,
                                value.types = c("reads", "clonotypes"),
                                add.pseudocounts = F,
@@ -237,8 +233,6 @@ segment_usage_dist <- function(data,
 #' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
 #' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
 #' if 'filter.by.chain' is set to true will also include 'chain' column
-#'
-#' @export
 segment2_usage_dist <- function(data,
                                value.types = c("reads", "clonotypes"),
                                add.pseudocounts = F,
@@ -272,8 +266,6 @@ segment2_usage_dist <- function(data,
 #' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
 #' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
 #' if 'filter.by.chain' is set to true will also include 'chain' column
-#'
-#' @export
 insert_size_dist <- function(data,
                              value.types = c("reads", "clonotypes"),
                              add.pseudocounts = F,
@@ -307,8 +299,6 @@ insert_size_dist <- function(data,
 #' @return a pairwise distance table, containing sample ids in 'sample.id.1' and
 #' 'sample.id.2' columns, statistic type in 'type' column and distance in 'd' column;
 #' if 'filter.by.chain' is set to true will also include 'chain' column
-#'
-#' @export
 deletion_size_dist <- function(data,
                                value.types = c("reads", "clonotypes"),
                                add.pseudocounts = F,
@@ -332,8 +322,6 @@ deletion_size_dist <- function(data,
 #' @param data distance table produced by '*_dist' functions
 #'
 #' @return an R dist object
-#'
-#' @export
 dists_to_rdist <- function(dists) {
   mat <- dists %>%
     rbind(dists %>%
@@ -355,8 +343,6 @@ dists_to_rdist <- function(dists) {
 #' @param data distance table produced by '*_dist' functions
 #'
 #' @return a data table holding sample ids and their 2D coordinates
-#'
-#' @export
 dists_to_mds <- function(dists) {
   if (nrow(dists) == 1) {
     return(data.frame(sample.id = c(dists$sample.id.1, dists$sample.id.2),

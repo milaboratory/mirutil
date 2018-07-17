@@ -76,8 +76,6 @@ read_mixcr_dataset <- function(metadata, ...) {
 #' @param dropExtraColumns drop all columns except ones needed for this package
 #'
 #' @return sample data table
-#'
-#' @export
 read_mixcr_sample <- function(filename, dropExtraColumns = F) {
   data <- .fread_gz(filename)
 

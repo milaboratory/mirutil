@@ -10,8 +10,6 @@
 #' @param cores number of cores for parallelization
 #'
 #' @return a summary data table of analysis results
-#'
-#' @export
 batch_analysis <- function(dataset,
                            fun,
                            cores = 2) {

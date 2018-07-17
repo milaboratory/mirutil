@@ -8,7 +8,6 @@ Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: Apache 2.0
 Encoding: UTF-8
-LazyData: true
 Depends:
     MASS,
     magrittr,
@@ -19,7 +18,3 @@ Depends:
     parallel,
     tidyr
 RoxygenNote: 6.0.1
-Suggests: knitr,
-    rmarkdown,
-    tinytex
-VignetteBuilder: knitr
