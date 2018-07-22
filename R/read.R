@@ -63,10 +63,12 @@ read_mixcr_dataset <- function(metadata, ...) {
                      "allVHitsWithScore",
                      "allDHitsWithScore",
                      "allJHitsWithScore",
-                     "allCHitsWithScore")
+                     "allCHitsWithScore",
+                     "nSeqCDR3")
 
 # temp columns that can be removed in further analysis
-.tmp_cols_mixcr <- c("refPoints")
+.tmp_cols_mixcr <- c("refPoints",
+                     "cdr3Start")
 
 #' Read mixcr sample
 #'
@@ -104,12 +106,23 @@ read_mixcr_sample <- function(filename, dropExtraColumns = F) {
   # vdj rearrangement markup
   ref_points_tmp <- str_split_fixed(data$refPoints, fixed(":"), Inf)
   data$vDel      <- as.integer(ref_points_tmp[,11])
-  data$vdIns     <- as.integer(ref_points_tmp[,13]) - as.integer(ref_points_tmp[,12])
+  data$vEnd      <- as.integer(ref_points_tmp[,12])
+  data$dStart    <- as.integer(ref_points_tmp[,13])
+  data$vdIns     <- data$dStart - data$vEnd
   data$dDel5     <- as.integer(ref_points_tmp[,14])
   data$dDel3     <- as.integer(ref_points_tmp[,15])
-  data$djIns     <- as.integer(ref_points_tmp[,17]) - as.integer(ref_points_tmp[,16])
-  data$vjIns     <- as.integer(ref_points_tmp[,17]) - as.integer(ref_points_tmp[,12])
+  data$dEnd      <- as.integer(ref_points_tmp[,16])
+  data$jStart    <- as.integer(ref_points_tmp[,17])
+  data$djIns     <- data$jStart - data$dEnd
+  data$vjIns     <- data$jStart - data$vEnd
   data$jDel      <- as.integer(ref_points_tmp[,18])
+
+  # to relative positions
+  data$cdr3Start <- as.integer(ref_points_tmp[,10])
+  data$vEnd      <- data$vEnd - data$cdr3Start
+  data$dStart    <- data$dStart - data$cdr3Start
+  data$dEnd      <- data$dEnd - data$cdr3Start
+  data$jStart    <- data$jStart - data$cdr3Start
 
   # non-negative insertions
   data$vdIns     <- ifelse(data$vdIns < 0, 0, data$vdIns)
@@ -127,3 +140,26 @@ read_mixcr_sample <- function(filename, dropExtraColumns = F) {
            d = ifelse(d == "", "undef", d),
            j = ifelse(j == "", "undef", j))
 }
+
+# Position cheatsheet
+#
+#  c      v   d1  d2  j
+#  |      |   |   |   |
+#  000000000011111111112222222222
+#  012345678901234567890123456789
+#  -------    ----    -----------
+#    00000000011111111112222222222
+#  12345678901234567890123456789
+#  *     *    *  *    *
+#
+#  1 .. v            :v-region
+#
+#  v + 1 .. d1       :n1
+#
+#  d1 + 1 .. d2      :d-region
+#
+#  d2 + 1 .. j       :n2-region
+#
+#  j + 1 .. end      :j-region
+#
+#  v + 1 .. j        :ndn-region

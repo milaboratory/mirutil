@@ -3,7 +3,9 @@
 # frequencies / zero-safe
 .jsd_freq_safe <- function(p, q) {
   p <- ifelse(is.na(p), 0, p)
+  p <- p / sum(p)
   q <- ifelse(is.na(q), 0, q)
+  q <- q / sum(q)
   m <- 0.5 * (p + q)
   0.5 * sum(ifelse(p == 0, 0, p * log(p / m)) +
               ifelse(q == 0, 0, q * log(q / m)))
@@ -313,6 +315,22 @@ deletion_size_dist <- function(data,
               cores,
               filter.by.chain,
               "deletion.size")
+}
+
+insert_profile_dist <- function(data,
+                               value.types = c("reads", "clonotypes"),
+                               add.pseudocounts = F,
+                               cores = 2,
+                               filter.by.chain = F) {
+  data$variable <- paste(data$nt.1, data$nt.2)
+  data$type <- data$ins.profile.type
+
+  .dist_value(data,
+              value.types,
+              add.pseudocounts,
+              cores,
+              filter.by.chain,
+              "insert.profile")
 }
 
 #' Convert pairwise distance tables to dist object

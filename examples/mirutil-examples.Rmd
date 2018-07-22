@@ -13,11 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 Install package via devtools:
 
 ```{r}
-#devtools::install_github("milaboratory/mirutil")
-#library(mirutil); packageVersion("mirutil")
-devtools::unload()
+devtools::install_github("milaboratory/mirutil")
+library(mirutil); packageVersion("mirutil")
+#devtools::unload()
 devtools::document()
-devtools::load_all()
+#devtools::load_all()
 ```
 
 Load metadata and samples
@@ -79,6 +79,77 @@ df.stats %>%
   plt_segm
 ```
 
+Plot insert size distribution
+
+```{r}
+plt_insert_size <- function(m) {
+  m %>%
+    ggplot(aes(x = insertions,
+               color = sample.id)) +
+    geom_line(aes(group = sample.id, y = freq.reads)) +
+    scale_x_continuous("Insertions", limits = c(0,30)) + ylab("Frequency") +
+    scale_color_brewer(palette = "Set1") +
+    facet_wrap(~chain+ins.type, scales = "free") +
+    theme_bw() +
+    theme(legend.position = "bottom",
+          strip.background = element_rect(fill = NA, color = NA),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+}
+
+df.stats %>%
+  .$insert.size %>%
+  plt_insert_size
+```
+
+Plot insert profiles
+
+```{r}
+plt_insert_profile <- function(m) {
+  m %>%
+    ggplot(aes(x = paste(nt.1, nt.2, sep = "\n"),
+               color = sample.id)) +
+    geom_line(aes(group = sample.id, y = freq.reads)) +
+    xlab("Base #1 / Base #2") + ylab("Frequency") +
+    scale_color_brewer(palette = "Set1") +
+    facet_wrap(~chain+ins.profile.type, scales = "free") +
+    theme_bw() +
+    theme(legend.position = "bottom",
+          strip.background = element_rect(fill = NA, color = NA),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+}
+
+df.stats %>%
+  .$insert.profile %>%
+  plt_insert_profile
+```
+
+Plot V/J trimming profiles
+
+```{r}
+plt_deletion_size <- function(m) {
+  m %>%
+    ggplot(aes(x = deletions,
+               group = paste(segment, sample.id),
+               color = sample.id,
+               y = freq.reads)) +
+    geom_line() +
+    xlab("Deletion size") + ylab("Frequency") +
+    scale_color_brewer(palette = "Set1") +
+    facet_wrap(~chain+del.type, scales = "free") +
+    theme_bw() +
+    theme(legend.position = "bottom",
+          strip.background = element_rect(fill = NA, color = NA),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank())
+}
+
+df.stats %>%
+  .$deletion.size %>%
+  plt_deletion_size
+```
+
 Get distances between samples based on rearrangement statistics
 
 ```{r}
@@ -130,5 +201,13 @@ Plot MDS for trimmed bases from segment ends
 ```{r}
 df.mds %>%
   filter(statistic == "deletion.size") %>%
+  plt_mds
+```
+
+Plot MDS for insert profile
+
+```{r}
+df.mds %>%
+  filter(statistic == "insert.profile") %>%
   plt_mds
 ```

@@ -351,3 +351,101 @@ compute_deletions <- function(sample,
     lapply(function(x) .compute_deletions(sample, x)) %>%
     rbindlist
 }
+
+
+#
+.bases = c("A", "T", "G", "C")
+.mock_count = rep(1/4, 4)
+
+# Compute insertion probabilities from a table of insert sequences
+.insert_prop_table <- function(seq,
+                               reverse = F,
+                               cloneCount = 1) {
+  bases <- strsplit(seq, "")[[1]]
+  nbases <- length(bases)
+
+  if (reverse) {
+    df <- data.frame(nt.1  = bases[1],
+                     nt.2  = .bases,
+                     count = .mock_count)
+  } else {
+    df <- data.frame(nt.1  = .bases,
+                     nt.2  = bases[1],
+                     count = .mock_count)
+  }
+
+  if (nbases > 1) {
+    if (reverse) {
+      df <- rbind(df,
+                  data.frame(nt.1 = bases[2:nbases],
+                             nt.2 = bases[1:(nbases-1)],
+                             count = 1))
+    } else {
+      df <- rbind(df,
+                  data.frame(nt.1 = bases[1:(nbases-1)],
+                             nt.2 = bases[2:nbases],
+                             count = 1))
+    }
+  }
+
+  df <- df %>%
+    group_by(nt.1, nt.2) %>%
+    summarise(count = sum(count))
+
+  df$cloneCount <- cloneCount
+
+  df
+}
+
+# Compute insertion base probability histogram
+.compute_insert_prop <- function(sample, type, reverse) {
+  reverse <- F
+
+  if (type[1] == "nVJ") {
+    sample <- sample %>%
+      filter(vEnd >= 0, jStart >= 0, vEnd < jStart) %>%
+      mutate(insert = substr(nSeqCDR3, vEnd + 1, jStart)) %>%
+      select(insert, cloneCount)
+  } else if (type[1] == "nVD") {
+    sample <- sample %>%
+      filter(vEnd >= 0, dStart >= 0, vEnd < dStart) %>%
+      mutate(insert = substr(nSeqCDR3, vEnd + 1, dStart)) %>%
+      select(insert, cloneCount)
+  } else if (type[1] == "nDJ") {
+    reverse <- T
+    sample <- sample %>%
+      filter(dEnd >= 0, jStart >= 0, dEnd < jStart) %>%
+      mutate(insert = substr(nSeqCDR3, dEnd + 1, jStart)) %>%
+      select(insert, cloneCount)
+  } else {
+    stop(paste0("Unknown insert base type ", type[1]))
+  }
+
+  sample %>%
+    rowwise %>%
+    do(.insert_prop_table(.$insert, reverse, .$cloneCount)) %>%
+    group_by(nt.1, nt.2, ins.profile.type = type[1]) %>%
+    summarise(count.clonotypes = sum(count),
+              count.reads = sum(cloneCount * count)) %>%
+    ungroup %>%
+    mutate(freq.clonotypes = count.clonotypes / sum(count.clonotypes),
+           freq.reads = count.reads / sum(count.reads))
+}
+
+compute_insertion_profile <- function(sample,
+                                      metadata = NA) {
+  chains <- .get_chains(metadata)
+
+  types <- c()
+  if (any(c("TRA", "TRG", "IGL", "IGK") %in% chains)) {
+    types <- "nVJ"
+  }
+  if (any(c("TRB", "TRD", "IGH") %in% chains)) {
+    types <- c(types, "nVD", "nDJ")
+  }
+
+  types %>%
+    as.list %>%
+    lapply(function(x) .compute_insert_prop(sample, x)) %>%
+    rbindlist
+}

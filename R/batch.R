@@ -43,15 +43,18 @@ batch_analysis <- function(dataset,
 #' @export
 compute_rearr_stats <- function(dataset,
                                 cores = 2) {
-  list("segment.usage" = batch_analysis(dataset,
-                                        compute_segment_usage,
-                                        cores),
-       "insert.size"   = batch_analysis(dataset,
-                                        compute_insertions,
-                                        cores),
-       "deletion.size" = batch_analysis(dataset,
-                                        compute_deletions,
-                                        cores))
+  list("segment.usage"  = batch_analysis(dataset,
+                                         compute_segment_usage,
+                                         cores),
+       "insert.size"    = batch_analysis(dataset,
+                                         compute_insertions,
+                                         cores),
+       "deletion.size"  = batch_analysis(dataset,
+                                         compute_deletions,
+                                         cores),
+       "insert.profile" = batch_analysis(dataset,
+                                         compute_insertion_profile,
+                                         cores))
 }
 
 #' Computes distances between samples in a dataset based on pre-computed
@@ -84,7 +87,9 @@ compute_rearr_stat_dist <- function(stats_bundle,
     stats_bundle$insert.size %>%
       insert_size_dist(value.types, add.pseudocounts, cores, filter.by.chain = T),
     stats_bundle$deletion.size %>%
-      deletion_size_dist(value.types, add.pseudocounts, cores, filter.by.chain = T)
+      deletion_size_dist(value.types, add.pseudocounts, cores, filter.by.chain = T),
+    stats_bundle$insert.profile %>%
+      insert_profile_dist(value.types, add.pseudocounts, cores, filter.by.chain = T)
   ) %>%
     rbindlist
 }
