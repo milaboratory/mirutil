@@ -12,29 +12,15 @@
 #' @return a summary data table of analysis results
 batch_analysis <- function(dataset,
                            fun,
-                           cores = 4,
-                           debug = F,
-                           ...) {
-  #if (debug) {
-    res <- dataset$metadata %>%
-      .to_rowlist %>%
-      lapply(function(x) {
-        print(x$sample.id);
-        fun(dataset$samples[[x$sample.id]], metadata = x, ...) %>%
-          mutate(sample.id = x$sample.id, chain = x$chain)
-      }) %>%
-      rbindlist
-  # } else {
-  #   res <- dataset$metadata %>%
-  #     .to_rowlist %>%
-  #     mclapply(function(x)
-  #       fun(dataset$samples[[x$sample.id]], metadata = x, ...) %>%
-  #         mutate(sample.id = x$sample.id, chain = x$chain),
-  #       mc.cores = cores) %>%
-  #     rbindlist
-  # }
-
-  res
+                           cores = 4) {
+  dataset$metadata %>%
+    .to_rowlist %>%
+    lapply(function(x) {
+      print(x$sample.id);
+      fun(dataset$samples[[x$sample.id]], metadata = x, ...) %>%
+        mutate(sample.id = x$sample.id, chain = x$chain)
+    }) %>%
+    rbindlist
 }
 
 # transform data frame to a list of named lists by row
@@ -57,8 +43,7 @@ batch_analysis <- function(dataset,
 #'
 #' @export
 compute_rearr_stats <- function(dataset,
-                                cores = 4,
-                                insert.prob.inner.cores = 2) {
+                                cores = 4) {
   list("segment.usage"  = batch_analysis(dataset,
                                          compute_segment_usage,
                                          cores),
@@ -70,8 +55,7 @@ compute_rearr_stats <- function(dataset,
                                          cores),
        "insert.profile" = batch_analysis(dataset,
                                          compute_insertion_profile,
-                                         max(1, round(cores / insert.prob.inner.cores)),
-                                         insert.prob.inner.cores = insert.prob.inner.cores)
+                                         cores)
        )
 }
 

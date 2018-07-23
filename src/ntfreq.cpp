@@ -89,7 +89,9 @@ DataFrame getDiNtFreq(StringVector seqs,
 }
 
 /*** R
-# Dont forget devtools::document()
+# Dont forget
+# Rcpp::compileAttributes()
+# devtools::document()
 getDiNtFreq("ATGC", 2, F)
 getDiNtFreq(c("ATGC", "CGTA"), c(2, 5), F)
 getDiNtFreq("CGTA", 2, T)
