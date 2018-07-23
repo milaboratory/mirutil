@@ -4,7 +4,7 @@
 \alias{compute_rearr_stats}
 \title{Computes rearrangement statistics for a dataset}
 \usage{
-compute_rearr_stats(dataset, cores = 2)
+compute_rearr_stats(dataset, cores = 4, insert.prob.inner.cores = 2)
 }
 \arguments{
 \item{dataset}{a set of samples and metadata produced by 'read_mixcr_dataset'

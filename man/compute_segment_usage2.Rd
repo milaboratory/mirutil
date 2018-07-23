@@ -4,7 +4,7 @@
 \alias{compute_segment_usage2}
 \title{Compute 2D segment usage}
 \usage{
-compute_segment_usage2(sample, metadata = NA)
+compute_segment_usage2(sample, metadata = NA, ...)
 }
 \arguments{
 \item{sample}{clonotype table, imported using 'read_mixcr_dataset' or

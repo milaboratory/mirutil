@@ -4,7 +4,7 @@
 \alias{compute_deletions_m}
 \title{Compute mean deletion sizes by segment}
 \usage{
-compute_deletions_m(sample, metadata = NA)
+compute_deletions_m(sample, metadata = NA, ...)
 }
 \arguments{
 \item{sample}{clonotype table, imported using 'read_mixcr_dataset' or

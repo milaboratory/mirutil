@@ -4,7 +4,7 @@
 \alias{compute_insertions}
 \title{Compute insertion size histogram}
 \usage{
-compute_insertions(sample, metadata = NA)
+compute_insertions(sample, metadata = NA, ...)
 }
 \arguments{
 \item{sample}{clonotype table, imported using 'read_mixcr_dataset' or

@@ -436,26 +436,35 @@ compute_deletions <- function(sample,
   sample <- sample %>%
     filter(grepl("^[ATGC]+$", insert))
 
-  # compute insert prob tables, all have len of 16
-  res <- sample %>%
-    .$insert %>%
-    strsplit("") %>%
-    mclapply(function(bases) .insert_prop_table(bases, reverse),
-             mc.cores = insert.prob.inner.cores) %>%
-    rbindlist
-
-  # append cloneCount by hand!
-  res$cloneCount <- rep(sample$cloneCount, each = 16)
-
-  res %>%
-    group_by(nt.1, nt.2) %>%
-    summarise(count.clonotypes = sum(count),
-              count.reads = sum(cloneCount * count)) %>%
-    ungroup %>%
+  # get frequencies
+  with(sample,
+       getDiNtFreq(insert, cloneCount, reverse)) %>%
     mutate(ins.profile.type = type[1],
            freq.clonotypes = count.clonotypes / sum(count.clonotypes),
            freq.reads = count.reads / sum(count.reads))
+
 }
+
+
+# # compute insert prob tables, all have len of 16
+# res <- sample %>%
+#   .$insert %>%
+#   strsplit("") %>%
+#   mclapply(function(bases) .insert_prop_table(bases, reverse),
+#            mc.cores = insert.prob.inner.cores) %>%
+#   rbindlist
+#
+# # append cloneCount by hand!
+# res$cloneCount <- rep(sample$cloneCount, each = 16)
+#
+# res %>%
+#   group_by(nt.1, nt.2) %>%
+#   summarise(count.clonotypes = sum(count),
+#             count.reads = sum(cloneCount * count)) %>%
+#   ungroup %>%
+#   mutate(ins.profile.type = type[1],
+#          freq.clonotypes = count.clonotypes / sum(count.clonotypes),
+#          freq.reads = count.reads / sum(count.reads))
 
 compute_insertion_profile <- function(sample,
                                       metadata = NA,

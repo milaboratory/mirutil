@@ -4,7 +4,7 @@
 \alias{read_mixcr_sample}
 \title{Read mixcr sample}
 \usage{
-read_mixcr_sample(filename, dropExtraColumns = F)
+read_mixcr_sample(filename, dropExtraColumns = F, verbose = F)
 }
 \arguments{
 \item{filename}{full path to sample}

@@ -4,7 +4,7 @@
 \alias{read_mixcr_dataset}
 \title{Read a set of mixcr samples}
 \usage{
-read_mixcr_dataset(metadata, ...)
+read_mixcr_dataset(metadata, cores = 1, ...)
 }
 \arguments{
 \item{metadata}{a metadata table}
