@@ -17,7 +17,7 @@
 #' @return sample bundle containing metadata and a list of sample data tables
 #'
 #' @export
-read_mixcr_dataset <- function(metadata, ...) {
+read_mixcr_dataset <- function(metadata, cores = 1, ...) {
   found_cols <- intersect(.req_cols_meta, colnames(metadata))
 
   if (!setequal(.req_cols_meta, found_cols)) {
@@ -32,7 +32,7 @@ read_mixcr_dataset <- function(metadata, ...) {
 
   samples <- metadata$file.name %>%
     as.list %>%
-    lapply(function(x) read_mixcr_sample(x, ...))
+    mclapply(function(x) read_mixcr_sample(x, ...), mc.cores = cores)
 
   names(samples) <- metadata$sample.id
 
@@ -42,6 +42,7 @@ read_mixcr_dataset <- function(metadata, ...) {
 
 # Auxilliary gz-friendly fread function
 .fread_gz <- function(filename) {
+  suppressWarnings(
   if (endsWith(filename, "gz")) {
     if ("command -v gzcat" %>%
         system(ignore.stdout = T, ignore.stderr = T) == 0) {
@@ -53,6 +54,7 @@ read_mixcr_dataset <- function(metadata, ...) {
       stop("Neither gzcat or zcat is present - cannot ungzip")
     }
   }
+  )
   fread(filename)
 }
 
