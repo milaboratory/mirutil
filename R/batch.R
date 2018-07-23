@@ -15,11 +15,11 @@ batch_analysis <- function(dataset,
                            cores = 4) {
   dataset$metadata %>%
     .to_rowlist %>%
-    lapply(function(x) {
-      print(x$sample.id);
+    mclapply(function(x) {
+      #print(x$sample.id);
       fun(dataset$samples[[x$sample.id]], metadata = x) %>%
         mutate(sample.id = x$sample.id, chain = x$chain)
-    }) %>%
+    }, mc.cores = cores) %>%
     rbindlist
 }
 
