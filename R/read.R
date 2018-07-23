@@ -46,7 +46,7 @@ read_mixcr_dataset <- function(metadata, ...) {
     if ("command -v gzcat" %>%
         system(ignore.stdout = T, ignore.stderr = T) == 0) {
       filename <- paste("gzcat", filename)
-    } else if ("command -v gzcat" %>%
+    } else if ("command -v zcat" %>%
                system(ignore.stdout = T, ignore.stderr = T) == 0) {
       filename <- paste("zcat", filename)
     } else {
