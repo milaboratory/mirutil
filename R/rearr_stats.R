@@ -65,7 +65,8 @@
 #' weighted 'freq.reads' frequencies, unnormalized 'count.*' values
 #' are also provided
 compute_segment_usage <- function(sample,
-                                  metadata = NA) {
+                                  metadata = NA,
+                                  ...) {
   chains <- .get_chains(metadata)
 
   types <- c("V", "J")
@@ -162,7 +163,8 @@ compute_segment_usage <- function(sample,
 #' weighted 'freq.reads' frequencies, unnormalized 'count.*' values
 #' are also provided
 compute_segment_usage2 <- function(sample,
-                                   metadata = NA) {
+                                   metadata = NA,
+                                   ...) {
   chains <- .get_chains(metadata)
 
   types <- c()
@@ -216,7 +218,8 @@ compute_segment_usage2 <- function(sample,
 #' weighted 'freq.reads' frequencies, unnormalized 'count.*' values
 #' are also provided
 compute_insertions <- function(sample,
-                               metadata = NA) {
+                               metadata = NA,
+                               ...) {
   chains <- .get_chains(metadata)
 
   types <- c()
@@ -278,7 +281,8 @@ compute_insertions <- function(sample,
 #' weighted 'mean.reads' means, total number of clonotypes/reads for a given
 #' segment is stored in 'count.*' columns
 compute_deletions_m <- function(sample,
-                              metadata = NA) {
+                                metadata = NA,
+                                ...) {
   chains <- .get_chains(metadata)
 
   types <- c("V3", "J5")
@@ -338,7 +342,8 @@ compute_deletions_m <- function(sample,
 #' weighted 'freq.reads' frequencies, unnormalized 'count.*' values
 #' are also provided
 compute_deletions <- function(sample,
-                              metadata = NA) {
+                              metadata = NA,
+                              ...) {
   chains <- .get_chains(metadata)
 
   types <- c("V3", "J5")
@@ -354,51 +359,57 @@ compute_deletions <- function(sample,
 
 
 #
-.bases = c("A", "T", "G", "C")
-.mock_count = rep(1/4, 4)
+.bases <- c("A", "T", "G", "C")
+.mock_count <- rep(1/4, 4)
+.df_base <- data.table(expand.grid(nt.1 = .bases, nt.2 = .bases),
+                       count = 0) %>%
+  mutate(nt.1 = as.character(nt.1),
+         nt.2 = as.character(nt.2)) %>%
+  as.data.table
 
 # Compute insertion probabilities from a table of insert sequences
-.insert_prop_table <- function(seq,
-                               reverse = F,
-                               cloneCount = 1) {
-  bases <- strsplit(seq, "")[[1]]
+# always returns 4x4=16 row table
+.insert_prop_table <- function(bases,
+                               reverse) {
   nbases <- length(bases)
 
+  df.lst = list(.df_base)
+
   if (reverse) {
-    df <- data.frame(nt.1  = bases[1],
-                     nt.2  = .bases,
-                     count = .mock_count)
+    df.lst <- c(df.lst,
+                list(data.table(nt.1  = bases[1],
+                           nt.2  = .bases,
+                           count = .mock_count)))
   } else {
-    df <- data.frame(nt.1  = .bases,
-                     nt.2  = bases[1],
-                     count = .mock_count)
+    df.lst <- c(df.lst,
+                list(data.table(nt.1  = .bases,
+                                nt.2  = bases[1],
+                                count = .mock_count)))
   }
 
   if (nbases > 1) {
     if (reverse) {
-      df <- rbind(df,
-                  data.frame(nt.1 = bases[2:nbases],
-                             nt.2 = bases[1:(nbases-1)],
-                             count = 1))
+      df.lst <- c(df.lst,
+                  list(data.table(nt.1 = bases[2:nbases],
+                                  nt.2 = bases[1:(nbases-1)],
+                                  count = 1)))
     } else {
-      df <- rbind(df,
-                  data.frame(nt.1 = bases[1:(nbases-1)],
-                             nt.2 = bases[2:nbases],
-                             count = 1))
+      df.lst <- c(df.lst,
+                  list(data.table(nt.1 = bases[1:(nbases-1)],
+                                  nt.2 = bases[2:nbases],
+                                  count = 1)))
     }
   }
 
-  df <- df %>%
+  df.lst %>%
+    rbindlist %>%
     group_by(nt.1, nt.2) %>%
     summarise(count = sum(count))
-
-  df$cloneCount <- cloneCount
-
-  df
 }
 
 # Compute insertion base probability histogram
-.compute_insert_prop <- function(sample, type, reverse) {
+.compute_insert_prop <- function(sample, type,
+                                 insert.prob.inner.cores) {
   reverse <- F
 
   if (type[1] == "nVJ") {
@@ -421,19 +432,35 @@ compute_deletions <- function(sample,
     stop(paste0("Unknown insert base type ", type[1]))
   }
 
-  sample %>%
-    rowwise %>%
-    do(.insert_prop_table(.$insert, reverse, .$cloneCount)) %>%
-    group_by(nt.1, nt.2, ins.profile.type = type[1]) %>%
+  # just in case remove inserts with non-ATGC chars
+  sample <- sample %>%
+    filter(grepl("^[ATGC]+$", insert))
+
+  # compute insert prob tables, all have len of 16
+  res <- sample %>%
+    .$insert %>%
+    strsplit("") %>%
+    mclapply(function(bases) .insert_prop_table(bases, reverse),
+             mc.cores = insert.prob.inner.cores) %>%
+    rbindlist
+
+  # append cloneCount by hand!
+  res$cloneCount <- rep(sample$cloneCount, each = 16)
+
+  res %>%
+    group_by(nt.1, nt.2) %>%
     summarise(count.clonotypes = sum(count),
               count.reads = sum(cloneCount * count)) %>%
     ungroup %>%
-    mutate(freq.clonotypes = count.clonotypes / sum(count.clonotypes),
+    mutate(ins.profile.type = type[1],
+           freq.clonotypes = count.clonotypes / sum(count.clonotypes),
            freq.reads = count.reads / sum(count.reads))
 }
 
 compute_insertion_profile <- function(sample,
-                                      metadata = NA) {
+                                      metadata = NA,
+                                      insert.prob.inner.cores = 1,
+                                      ...) {
   chains <- .get_chains(metadata)
 
   types <- c()
@@ -446,6 +473,8 @@ compute_insertion_profile <- function(sample,
 
   types %>%
     as.list %>%
-    lapply(function(x) .compute_insert_prop(sample, x)) %>%
+    lapply(function(x) .compute_insert_prop(sample,
+                                            x,
+                                            insert.prob.inner.cores)) %>%
     rbindlist
 }

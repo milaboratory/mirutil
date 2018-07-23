@@ -30,7 +30,7 @@ dataset <- metadata %>% read_mixcr_dataset
 Compute rearrangement statistics
 
 ```{r}
-library(kableExtra) # for tables
+#library(kableExtra) # for tables
 
 df.stats <- dataset %>%
   compute_rearr_stats

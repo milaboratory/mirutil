@@ -66,7 +66,8 @@ read_mixcr_dataset <- function(metadata, cores = 1, ...) {
                      "allDHitsWithScore",
                      "allJHitsWithScore",
                      "allCHitsWithScore",
-                     "nSeqCDR3")
+                     "nSeqCDR3",
+                     "aaSeqCDR3")
 
 # temp columns that can be removed in further analysis
 .tmp_cols_mixcr <- c("refPoints",
@@ -80,7 +81,7 @@ read_mixcr_dataset <- function(metadata, cores = 1, ...) {
 #' @param dropExtraColumns drop all columns except ones needed for this package
 #'
 #' @return sample data table
-read_mixcr_sample <- function(filename, dropExtraColumns = F) {
+read_mixcr_sample <- function(filename, dropExtraColumns = F, verbose = F) {
   data <- .fread_gz(filename)
 
   # check missing cols
@@ -134,6 +135,10 @@ read_mixcr_sample <- function(filename, dropExtraColumns = F) {
   if (dropExtraColumns) {
     data <- data %>%
       select(-one_of(.tmp_cols_mixcr))
+  }
+
+  if (verbose) {
+    print(paste("Loaded sample", filename))
   }
 
   # replace blank segment names
