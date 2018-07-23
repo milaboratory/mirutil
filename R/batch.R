@@ -17,7 +17,7 @@ batch_analysis <- function(dataset,
     .to_rowlist %>%
     lapply(function(x) {
       print(x$sample.id);
-      fun(dataset$samples[[x$sample.id]], metadata = x, ...) %>%
+      fun(dataset$samples[[x$sample.id]], metadata = x) %>%
         mutate(sample.id = x$sample.id, chain = x$chain)
     }) %>%
     rbindlist
