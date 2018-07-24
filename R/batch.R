@@ -116,8 +116,25 @@ compute_rearr_stat_dist <- function(stats_bundle,
 #' rearrangement statistic and chain
 #'
 #' @export
-compute_rearr_stat_mds <- function(dists_bundle) {
+compute_rearr_stat_mds <- function(dists_bundle,
+                                   cores = 2) {
   dists_bundle %>%
-    group_by(chain, statistic, type, value.type) %>%
-    do(dists_to_mds(.))
+    select(chain, statistic, type, value.type) %>%
+    unique %>%
+    .to_rowlist %>%
+    mclapply(function(x) {
+      dists_bundle %>%
+        filter(chain == x$chain,
+               statistic == x$statistic,
+               type == x$type,
+               value.type == x$value.type) %>%
+        dists_to_mds %>%
+        mutate(chain = x$chain,
+               statistic = x$statistic,
+               type = x$type,
+               value.type = x$value.type)
+    }, mc.cores = cores) %>%
+    rbindlist
+    #group_by(chain, statistic, type, value.type) %>%
+    #do(dists_to_mds(.))
 }

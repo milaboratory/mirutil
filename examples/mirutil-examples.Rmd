@@ -13,6 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Install package via devtools:
 
 ```{r}
+library(ggplot2)
 devtools::install_github("milaboratory/mirutil")
 library(mirutil); packageVersion("mirutil")
 #devtools::unload()
