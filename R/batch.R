@@ -141,12 +141,22 @@ compute_rearr_stat_mds <- function(dists_bundle,
 
 .merge_metadata <- function(data, metadata) {
   if ("sample.id" %in% colnames(data)) {
+    if ("chain" %in% colnames(data) & "chain" %in% colnames(metadata)) {
+      metadata <- metadata %>% select(-chain)
+    }
+
     return(data %>% merge(metadata, by = "sample.id"))
   } else if ("sample.id.1" %in% colnames(data)) {
     metadata.1 <- metadata
     colnames(metadata.1) <- paste0(colnames(metadata.1), ".1")
     metadata.2 <- metadata
     colnames(metadata.2) <- paste0(colnames(metadata.2), ".2")
+
+    if ("chain" %in% colnames(data) & "chain" %in% colnames(metadata)) {
+      metadata.1 <- metadata.1 %>% select(-chain.1)
+      metadata.2 <- metadata.2 %>% select(-chain.2)
+    }
+
     return(data %>%
              merge(metadata.1, by = "sample.id.1") %>%
              merge(metadata.2, by = "sample.id.2"))
