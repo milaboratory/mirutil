@@ -141,15 +141,15 @@ compute_rearr_stat_mds <- function(dists_bundle,
 
 .merge_metadata <- function(data, metadata) {
   if ("sample.id" %in% colnames(data)) {
-    return(data %>% merge(metadata))
+    return(data %>% merge(metadata, by = "sample.id"))
   } else if ("sample.id.1" %in% colnames(data)) {
     metadata.1 <- metadata
     colnames(metadata.1) <- paste0(colnames(metadata.1), ".1")
     metadata.2 <- metadata
     colnames(metadata.2) <- paste0(colnames(metadata.2), ".2")
     return(data %>%
-             merge(metadata.1) %>%
-             merge(metadata.2))
+             merge(metadata.1, by = "sample.id.1") %>%
+             merge(metadata.2, by = "sample.id.2"))
   } else {
     stop("No sample id in data frame")
   }
