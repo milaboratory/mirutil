@@ -290,6 +290,17 @@ insert_profile_dist <- function(data,
               "insert.profile")
 }
 
+#' @export
+symmetrize_dists <- function(dists) {
+  dists %>%
+    rbind(dists %>%
+            mutate(tmp = sample.id.1,
+                   sample.id.1 = sample.id.2,
+                   sample.id.2 = tmp) %>%
+            select(-tmp)) %>%
+    unique
+}
+
 #' Convert pairwise distance tables to dist object
 #'
 #' @description Converts between distance tables and R dist object
@@ -299,11 +310,7 @@ insert_profile_dist <- function(data,
 #' @return an R dist object
 dists_to_rdist <- function(dists) {
   mat <- dists %>%
-    rbind(dists %>%
-            mutate(tmp = sample.id.1,
-                   sample.id.1 = sample.id.2,
-                   sample.id.2 = tmp) %>%
-            select(-tmp)) %>%
+    symmetrize_dists %>%
     dcast(sample.id.1 ~ sample.id.2, value.var = 'd', fill = 0)
   rownames(mat) <- mat$sample.id.1
   mat$sample.id.1 <- NULL

@@ -138,3 +138,26 @@ compute_rearr_stat_mds <- function(dists_bundle,
     #group_by(chain, statistic, type, value.type) %>%
     #do(dists_to_mds(.))
 }
+
+#' @export
+add_metadata <- function(data, metadata) {
+  if (is.data.frame(data)) {
+    if ("sample.id.1" %in% colnames(data)) {
+      metadata.1 <- metadata
+      colnames(metadata.1) <- paste0(colnames(metadata.1), ".1")
+      metadata.2 <- metadata
+      colnames(metadata.2) <- paste0(colnames(metadata.2), ".1")
+      return(data %>%
+               merge(metadata.1) %>%
+               merge(metadata.2))
+    } else {
+      return(data %>%
+               merge(metadata))
+    }
+  } else {
+    for (nn in names(data)) {
+      data[[nn]] <- data[[nn]] %>% merge(metadata)
+    }
+    return(data)
+  }
+}
