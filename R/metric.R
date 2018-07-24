@@ -1,39 +1,3 @@
-## Various Jensen-Shannon Divergence implementations
-
-# frequencies / zero-safe
-.jsd_freq_safe <- function(p, q) {
-  p <- ifelse(is.na(p), 0, p)
-  p <- p / sum(p)
-  q <- ifelse(is.na(q), 0, q)
-  q <- q / sum(q)
-  m <- 0.5 * (p + q)
-  0.5 * sum(ifelse(p == 0, 0, p * log(p / m)) +
-              ifelse(q == 0, 0, q * log(q / m)))
-}
-
-# frequencies / zero-unsafe
-.jsd_freq_unsafe <- function(p, q) {
-  m <- 0.5 * (p + q)
-  0.5 * sum(p * log(p / m) + q * log(q / m))
-}
-
-# count / with pseudocounts
-.jsd_count_safe <- function(x, y) {
-  x <- ifelse(is.na(x), 0, x) + 1
-  y <- ifelse(is.na(y), 0, y) + 1
-  .jsd_freq_unsafe(x / sum(x), y / sum(y))
-}
-
-# distance based on count / with pseudocounts
-.jsd_count_dist <- function(p, q) {
-  sqrt(.jsd_count_safe(p, q) / log(2))
-}
-
-# distance based on frequencies
-.jsd_freq_dist <- function(p, q) {
-  sqrt(.jsd_freq_safe(p, q) / log(2))
-}
-
 # compute a distance between two histograms corresponding to different samples
 .histogram_dist_inner <- function(data,
                                   sample.id.1,
@@ -41,13 +5,6 @@
                                   .type,
                                   add.pseudocounts,
                                   filter.by.chain) {
-  # select distance metric to use
-  if (add.pseudocounts) {
-    distfun <- .jsd_count_dist
-  } else {
-    distfun <- .jsd_freq_dist
-  }
-
   # filter sample 1
   d1 <- data %>%
     mutate(value.1 = value) %>%
@@ -90,7 +47,7 @@
   res <- d1 %>%
     merge(d2,
           all = T, allow.cartesian = T, by = "variable") %>%
-    summarise(d = distfun(value.1, value.2)) %>%
+    summarise(d = jsdDistSafe(value.1, value.2, add.pseudocounts)) %>%
     mutate(sample.id.1 = sample.id.1,
            sample.id.2 = sample.id.2,
            type = .type)

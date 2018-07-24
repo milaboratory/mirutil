@@ -4,7 +4,7 @@
 \alias{batch_analysis}
 \title{Apply an analysis function to all samples in a dataset}
 \usage{
-batch_analysis(dataset, fun, cores = 4, debug = F, ...)
+batch_analysis(dataset, fun, cores = 4)
 }
 \arguments{
 \item{dataset}{a set of samples and metadata produced by 'read_mixcr_dataset'
