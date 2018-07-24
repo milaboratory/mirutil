@@ -139,25 +139,32 @@ compute_rearr_stat_mds <- function(dists_bundle,
     #do(dists_to_mds(.))
 }
 
+.merge_metadata <- function(data, metadata) {
+  if ("sample.id" %in% colnames(data)) {
+    return(data %>% merge(metadata))
+  } else if ("sample.id.1" %in% colnames(data)) {
+    metadata.1 <- metadata
+    colnames(metadata.1) <- paste0(colnames(metadata.1), ".1")
+    metadata.2 <- metadata
+    colnames(metadata.2) <- paste0(colnames(metadata.2), ".1")
+    return(data %>%
+             merge(metadata.1) %>%
+             merge(metadata.2))
+  } else {
+    stop("No sample id in data frame")
+  }
+}
+
 #' @export
 add_metadata <- function(data, metadata) {
-  if (is.data.frame(data)) {
-    if ("sample.id.1" %in% colnames(data)) {
-      metadata.1 <- metadata
-      colnames(metadata.1) <- paste0(colnames(metadata.1), ".1")
-      metadata.2 <- metadata
-      colnames(metadata.2) <- paste0(colnames(metadata.2), ".1")
-      return(data %>%
-               merge(metadata.1) %>%
-               merge(metadata.2))
-    } else {
-      return(data %>%
-               merge(metadata))
-    }
-  } else {
+  if (is.data.frame(data) | is.data.table(data)) {
+    return(.merge_metadata(data, metadata))
+  } else if (is.list(data)) {
     for (nn in names(data)) {
-      data[[nn]] <- data[[nn]] %>% merge(metadata)
+      data[[nn]] <- data[[nn]] %>% .merge_metadata(metadata)
     }
     return(data)
+  } else {
+    stop("Unknown data format")
   }
 }
