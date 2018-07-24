@@ -146,7 +146,7 @@ compute_rearr_stat_mds <- function(dists_bundle,
     metadata.1 <- metadata
     colnames(metadata.1) <- paste0(colnames(metadata.1), ".1")
     metadata.2 <- metadata
-    colnames(metadata.2) <- paste0(colnames(metadata.2), ".1")
+    colnames(metadata.2) <- paste0(colnames(metadata.2), ".2")
     return(data %>%
              merge(metadata.1) %>%
              merge(metadata.2))
