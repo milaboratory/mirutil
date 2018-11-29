@@ -334,7 +334,7 @@ dists_to_mds <- function(dists) {
 
   xy <- dists %>%
     dists_to_rdist %>%
-    isoMDS(maxit = 500) %>%
+    cmdscale(maxit = 500) %>%
     .$points
 
   data.frame(sample.id = rownames(xy),
